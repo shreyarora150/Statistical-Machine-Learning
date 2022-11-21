@@ -1,0 +1,95 @@
+---
+title: "HW-1"
+author: "Shrey"
+date: "2022-09-01"
+output: pdf_document
+---
+
+##HW-1
+
+#1. "Data mining and statistics: What is the connection?" by Friedman (1997).
+
+Summary:
+
+There are two main views that address if statistics should be concerned with data mining, the first suggests that because the number of statisticians is not rising as rapidly as the amount of data and its application, statistics as a field should only be concerned with problems that use maths and probability inference. The second view however encourages statistics to adopt and be concerned with DM because the set of problems being worked on in that field is closely related to the set of problems solved through statistics.
+
+The second view sounds more logical and advantageous than the first, if the field of statistics is open to and adopts data mining then it will be beneficial for both the fields, statistics will not lose its relevance on information science and data mining techniques can save lot of computation power and unncessary use of complete databases if statistical techniques are incorporated.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#7. Generate random numbers from Normal distribution
+
+```{r echo=FALSE}
+ help(set.seed)
+ set.seed(2014)
+ x = rnorm(10, mean=0, sd=1)
+ print(round(x,4))
+ plot(density(x))
+```
+
+# 
+
+#8. Generate data from multivariate normal distribution.
+
+```{r echo=FALSE}
+library(MASS)
+help(mvrnorm)
+mean1 = c(2,1)
+cov1 = matrix(c(1,0,0,1),nrow=2)
+data1 = mvrnorm(50,mean1,cov1)
+plot(data1,xlab="x1",ylab="x2",col="blue")
+```
+
+#9. Draw a scatter plot
+
+```{r echo=FALSE}
+x = seq(0,10,0.5)
+y = seq(2,12,0.5)
+plot(x,y)
+lines(x,y)
+abline(a=0,b=1)
+```
+
+#10.Load data and get basic statistics summary
+
+```{r echo=FALSE}
+data(cars)
+cars
+attach(cars)
+mean(dist)
+var(dist)
+hist(dist)
+```
+
+# 11. Matrix and submatrix
+
+```{r echo=FALSE}
+a = matrix(rnorm(20), 5, 4)
+a
+b = a[1,]
+b
+c = a[, 2:4]
+c
+d = a[-c(1:2),]
+d
+```
+
+#12. Fit a simple linear regression model
+
+```{r echo=FALSE}
+
+mymodel = lm(dist ~ speed)
+summary(mymodel)
+### draw the scatter plot
+plot(cars, main="Stopping Distance versus Speed")
+### draw the fitted regression line (red)
+lines(speed, fitted(mymodel), type="l", lty=1, col=2)
+### draw a smooth line through a scatter plot (green)
+lines(stats::lowess(cars), type="l", lty=1, col=3)
+detach(cars)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

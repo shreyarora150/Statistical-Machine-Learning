@@ -1,0 +1,377 @@
+---
+title: "HW -5 574"
+author: "Shrey"
+date: "2022-11-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### 1 
+
+The paper discusses LASSO as choice for variable selection and regularization. Lasso has properties of both ridge and variable selection. Its equivalent to solving OLS problem subject to $\Sigma{|\beta|}<t$ 
+
+For p=2 the sign of lasso coefficients is the same as that of OLS but for p>3 the signs can change. 
+
+They further propose that lasso can be extended to generalized linear model like logistic regression and Tree based models.
+
+
+### 2
+
+### (a)
+
+When t = 0 all the coefficients except the intercept are set to zero
+
+### (b)
+
+When t>t0 then we are removing the constraint from the LASSO problem and the objective function will be solved for ordinary least square method hence for t>t0 coefficients from lasso will be same as obtained in ordinary least squares
+
+### (c)
+
+We have to prove that 
+$min_{\beta}\Sigma_{i=1}^{n}{(y_{i}-x_{i}^T\beta{})^2}+\Sigma_{j=1}^{p}{|\beta_{j}|}$
+
+and 
+
+$\Sigma_{j=1}^{p}{(\beta_{j}^{ols}-\beta)^2} + \Sigma_{j=1}^{p}{|\beta_{j}|}$
+
+will produce the same solution for beta
+
+$\Sigma_{j=1}^{p}{|\beta_{j}|}$ is common in both
+
+Writing both the equations in matrix form
+
+$(Y-X\beta_{})^T(Y-X\beta{})$ and $(\beta^{ols}-\beta)^T(\beta^{ols}-\beta)$
+
+when X is orthogonal $\beta^{ols} = X^TY$
+
+second equation becomes 
+$(X^TY-\beta)^T(X^TY-\beta)$
+
+In the first equation pre- multiplying $X^T$ gives us
+$(X^TY-X^TX\beta_{})^T(X^TY-X^TX\beta{})$ 
+$(X^TY-\beta_{})^T(X^TY-\beta{})$ 
+
+which is equal to the first equation 
+
+### (d)
+
+```{r}
+beta_ols = c(1.1,-0.8,0.3,-0.1)
+l = c(1,0.4)
+
+for (lambda in l)
+{
+  beta_ridge = beta_ols/(1+lambda)
+  print(beta_ridge)
+  beta_lasso = beta_ols
+  for (i in seq(1,4))
+  {
+    if (beta_ols[i] > lambda/2)
+    {
+      beta_lasso[i] =beta_ols[i]-lambda/2
+    }
+    if (abs(beta_ols[i]) <= lambda/2)
+    {
+      beta_lasso[i] =0
+    }
+    if (beta_ols[i]< -1*lambda/2)
+    {
+      beta_lasso = beta_ols + lambda/2
+    }
+  }
+  
+  print(beta_lasso)
+}
+```
+When lambda = 1 
+beta_ridge =  0.55 -0.40  0.15 -0.05
+beta_lasso = 1.6 -0.3  0.0  0.0
+
+When lambda = 0.4
+beta_ridge =  0.78571429 -0.57142857  0.21428571 -0.07142857
+beta_lasso = 1.3 -0.6  0.1  0.0
+
+### 3
+
+### (a)
+
+Adaptive Lasso can be transformed into an equivalent Lasso problem using the following algorithm:-
+
+1. Divide column of centered X matrix with Wj, where $W_{j} = 1/\beta_{j}^{ols}$ 2. Solve the lasso problem with transformed X matrix
+
+$\hat{\beta{}} = argmin_{\beta} ||y-\Sigma{x_{j}}\beta_{j}||^{2} + \lambda\Sigma_{i=1}^{p}{|\beta_{j}|}$
+
+3. $\hat{\beta_{j}^{lasso}}=\hat{\beta_{j}}/W_{j}$
+
+### (b)
+
+We can use the LARS package to fit adaptive lasso using the following way
+
+1. Fit a linear model and get the coefficients and compute the weights, Wj = 1/bj
+
+2. Divide the columns of centered X with W to and use cv.lars function from lasr package on the transformed X to get the parameter s. 
+
+3. Use the predict.lars() function with type = "coeff" to get the coefficients
+
+4. Finally, divide the above coefficients with W to get the coefficents for adpative lasso
+
+### 4 
+
+### (a)
+```{r}
+data = read.csv("/Users/shreyarora/Documents/Data sets/prostate_cancer.csv")
+data = data[,2:11]
+train_data = data[which(data["train"]==TRUE),][,1:9]
+test_data = data[-which(data["train"]==TRUE),][,1:9]
+
+linear_model = lm(lpsa~.,data = train_data)
+#r_squared
+print(summary(linear_model)$r.squared)
+# p_values 
+p_values = summary(linear_model)[4]$coefficients[,4]
+print(p_values)
+# significant_predictors
+p_values[p_values<=0.05]
+# train and test_errors 
+MSE_train = sum((linear_model$fitted.values - train_data[,9])^2)/67
+
+MSE_test = sum((predict(linear_model, newdata = test_data)-test_data[,9])^2)/30
+
+print(MSE_train)
+print(MSE_test)
+```
+R-squared = 0.6943712
+p values = 
+           (Intercept)       lcavol      lweight          age         lbph 
+            7.833423e-01  1.469415e-06  7.917895e-03  1.680626e-01  4.430784e-02 
+                 svi          lcp      gleason        pgg45 
+            1.650539e-02  6.697085e-02  8.838923e-01  8.754628e-02 
+
+significant coefficients = lcavol  lweight  lbph   svi 
+
+Train error = 0.4391998
+Test error = 0.521274
+
+### (b)
+
+```{r}
+library(leaps)
+forward_selection = regsubsets(train_data[,-9],train_data[,9],method = "forward")
+summary(forward_selection)
+```
+```{r}
+columns = c(1,2,5,4,8,6,3,7)
+
+train_errors = c()
+BIC = c()
+
+for (i in seq(1,8))
+{
+  x_train = train_data[,columns[1:i]]
+  lpsa = train_data[,9]
+  df = data.frame(x_train,lpsa)
+  m = lm(lpsa~.,data = df)
+  print(m$coefficients)
+  m.train_error = sum((m$fitted.values - lpsa)^2)/67
+  m.bic = 67*log(m.train_error)+log(67)*length(m$coefficients)
+  train_errors = append(train_errors,m.train_error)
+  BIC =append(BIC,m.bic)
+  print(m.train_error)
+  print(m.bic)
+}
+
+
+
+```
+
+```{r}
+## min BIC
+print(which.min(BIC))
+##Final Model with min BIC 
+x_train = train_data[,columns[1:which.min(BIC)]]
+lpsa = train_data[,9]
+df = data.frame(x_train,lpsa)
+m = lm(lpsa~.,data = df)
+print(m)
+
+##test data
+x_test =  test_data[,columns[1:which.min(BIC)]]
+lpsa_test = test_data[,9]
+test_error = sum((predict(m,newdata = x_test)-lpsa_test)^2)/30
+print(test_error)
+```
+
+selected model
+
+ lpsa =    -1.0494 + 0.6276xlcavol + 0.7384xlweight 
+
+ test error = 0.49248
+
+### (c)
+
+```{r}
+train_errors = c()
+AIC = c()
+
+for (i in seq(1,8))
+{
+  x_train = train_data[,columns[1:i]]
+  lpsa = train_data[,9]
+  df = data.frame(x_train,lpsa)
+  m = lm(lpsa~.,data = df)
+  m.train_error = sum((m$fitted.values - lpsa)^2)/67
+  m.aic = 67*log(m.train_error)+2*length(m$coefficients)
+  train_errors = append(train_errors,m.train_error)
+  AIC =append(AIC,m.aic)
+  print(m.train_error)
+  print(m.aic)
+}
+
+## min AIC
+print(which.min(AIC))
+##Final Model with min BIC 
+x_train = train_data[,columns[1:which.min(AIC)]]
+lpsa = train_data[,9]
+df = data.frame(x_train,lpsa)
+model_aic = lm(lpsa~.,data = df)
+print(model_aic)
+
+##test data
+x_test =  test_data[,columns[1:which.min(AIC)]]
+lpsa_test = test_data[,9]
+test_error = sum((predict(model_aic,newdata = x_test)-lpsa_test)^2)/30
+print(test_error)
+```
+
+Test error = 0.5165135
+
+### 5
+
+### (a)
+
+```{r echo =F}
+library(lars)
+
+lasso.s = seq(0,1,length = 100)
+x= matrix(c(train_data[,1],train_data[,2],train_data[,3],train_data[,4],train_data[,5],train_data[,6],train_data[,7],train_data[,8]),67,8)
+y = matrix(c(train_data[,9]),67,1)
+lasso.cv = cv.lars(x,y,K=5, index = lasso.s, mode = "fraction")
+
+```
+```{r}
+s_min_cv = lasso.s[which.min(lasso.cv$cv)]
+lasso_model = lars(x,y,type= "lasso")
+lasso_coeff =  predict(lasso_model, s=s_min_cv, type="coef",mode="frac")
+print(lasso_coeff)
+
+x_test = matrix(c(test_data[,1],test_data[,2],test_data[,3],test_data[,4],test_data[,5],test_data[,6],test_data[,7],test_data[,8]),30,8)
+y_test = matrix(c(test_data[,9]),30,1)
+
+y_predicted = predict.lars(lasso_model,newx =x_test, s=s_min_cv, type = "fit", mode="fraction")
+
+test_error = sum((y_predicted$fit-y_test)^2)/30
+print(test_error)
+```
+
+test error = 0.4806732
+
+### (b)
+
+```{r}
+bound = lasso.cv$cv[which.min(lasso.cv$cv)] + lasso.cv$cv.error[which.min(lasso.cv$cv)]
+
+s_one_std = lasso.s[min(which(lasso.cv$cv < bound))]
+lasso_coeff_one_std =  predict(lasso_model, s=s_one_std, type="coef",mode="frac")
+print(lasso_coeff_one_std)
+
+y_predicted_one_std = predict.lars(lasso_model,newx =x_test, s=s_one_std, type = "fit", mode="fraction")
+test_error2 = sum((y_predicted_one_std$fit-y_test)^2)/30
+print(test_error2)
+```
+
+test error = 0.4708345
+
+### 6
+
+### (a)
+```{r}
+gamma = 1
+bols= lm(lpsa~.,data = train_data)$coefficients[2:9]
+w= bols
+## adjusting x for adaptive lasso
+x_adaptive = x
+x_test_adaptive = x_test
+for (j in seq(1,8))
+{
+  w[j] = 1/abs(bols[j])
+  x_centered = x[,j] - mean(x[,j])
+  x_adaptive[,j] = x_centered/(abs(w[j])^gamma)
+}
+
+adaptivelasso.cv = cv.lars(x_adaptive,y,K=5,index= lasso.s,mode="fraction")
+
+```
+```{r}
+s_min_cv_adpative = lasso.s[which.min(adaptivelasso.cv$cv)]
+print(s_min_cv_adpative)
+adpative_lasso_model = lars(x_adaptive,y,type= "lasso")
+coeffs =  predict(adpative_lasso_model, s=s_min_cv_adpative, type="coef",mode="frac")$coefficients
+coeffs_alasso = coeffs
+#Divide coeffs by w to get adaptive lasso coeffs 
+for (i in seq(1,8))
+{
+  coeffs_alasso[i] = coeffs[i]/abs(w[i])
+}
+print(coeffs_alasso)
+
+y_predicted_alasso = x_test%*%coeffs_alasso
+test_error_alasso = sum((y_predicted_alasso - y_test)^2)/30
+print(test_error_alasso)
+```
+
+S = 0.8686869
+coefficients = 0.543134167  0.595205705 -0.014889037  0.134621147  0.667500063
+-0.143386850  0.000000000  0.007342938
+test error = 0.5308645
+
+### (b)
+
+```{r}
+bound = adaptivelasso.cv$cv[which.min(adaptivelasso.cv$cv)] + adaptivelasso.cv$cv.error[which.min(adaptivelasso.cv$cv)]
+
+s_one_std = lasso.s[min(which(adaptivelasso.cv$cv < bound))]
+print(s_one_std)
+coeffs=  predict(adpative_lasso_model, s=s_one_std, type="coef",mode="frac")$coefficients
+coeffs_alasso = coeffs
+#Divide coeffs by w to get adaptive lasso coeffs 
+for (i in seq(1,8))
+{
+  coeffs_alasso[i] = coeffs[i]/abs(w[i])
+}
+print(coeffs_alasso)
+
+y_predicted_alasso = x_test%*%coeffs_alasso
+test_error_alasso = sum((y_predicted_alasso - y_test)^2)/30
+print(test_error_alasso)
+```
+s = 0.4949495
+
+coefficients =0.461672898 0.474494704 0.000000000 0.065169827 0.391733101 0.000000000 0.000000000 0.002017095
+
+test error = 0.4510459
+
+### (c)
+
+
+
+Variable selection's best solution had test error of 0.49248 and it retained two variables lcavol and lweight.
+
+Lasso's best solution had test error of 0.4708345 and it retained 
+5 variables lcavol, lweight,  lbph  ,  svi, pgg45
+
+Adaptive lasso produced best error of 0.4510459 and it retained 5 variables lcavol, lweight,  lbph  ,  svi, pgg45. 
+
+On comparing adaptive lasso with lasso and variable selection we can see variable selection produced most sparse model but it had relatively high error. 
+Adaptive lasso and lasso both produced models with 5 parameters but adaptive lasso had better error than lasso. 

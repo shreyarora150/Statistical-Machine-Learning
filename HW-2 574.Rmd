@@ -1,0 +1,177 @@
+---
+title: "HW-2 574M"
+author: "Shrey"
+date: "2022-09-14"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 1
+
+#### The driving deep question of data science, role of domain and kind of results, analysis and methods that should be considered data science is not clear yet as the field is new and growing.
+
+#### Research challenges in the field of data science include methodological and technical areas like, What happens behind the black box of Deep learning and its limitation, causal reasoning, scarcity or high cost or limited use case of data, incapability of models to handle heterogeneous data, separating noise from the true signal, building trustable AI, Efficient and optimal computation for training models, Accurate and automated data pre-processing and social and ethical areas like privacy of data and data sources, and ethics in data collection, model building and deployment and use of ML.
+
+#### Data science as of now has a lot of research challenges and has shared applications from the fields of computer science, maths and statistics but it's a progressing field and it can emerge as a separate independent field.
+
+### 2
+
+### (a)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q2-PART-A.jpg)
+
+### (b)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q2-PART-B.jpg)
+
+### 3
+
+### (a)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q3-A.jpg)
+
+### (b)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q3-B-I.jpg)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q3-B-II.jpg)
+
+### (c)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q3-C.jpg)
+
+### 4
+
+### (a)
+
+![4(a)](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-A-1ST.jpg) ![4(a)](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-A-2ND.jpg)
+
+### (b)(i)
+
+![4(b)](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-b-I-1ST.jpg) ![4(b)](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-b-I-2ND.jpg)
+
+### (b)(ii)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-b-II-1ST.jpg)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-b-II-2ND.jpg)
+
+### (b)(iii)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-C-I.jpg)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q4-C-II.jpg)
+
+### 5
+
+### (a)
+
+![5(a))](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q5-A.jpg) **(b)**
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q5-B.jpg)
+
+### (c)
+
+```{r echo= FALSE}
+
+## plotting the ratio of class densities and ratio of costs 
+x<-seq(-4,4,length=100)
+g1 = dnorm(x,0,1)
+g0 = 0.65*dnorm(x,1,1) + 0.35*dnorm(x,-1,2)
+plot(x,g1/g0,type="l")
+abline(h=3/2)
+```
+
+```{r}
+
+#from above graph we can see first root is between -2 and 0 and other is between 0,2. We will use uniroot function twice between these respective intervals
+
+
+f1<- function(x) 2*exp(-1/2*x^2) - 1.95*exp(-1/2*(x-1)^2) - 0.525*exp(-1/2*((x+1)/2)^2)
+
+r1<-uniroot(f1,c(-2,0))
+r2<-uniroot(f1,c(0,2))
+
+print(c(r1$root,r2$root))
+
+
+```
+
+### Therefore F\*[X] is 1 between range (-1.5811306,0.2736516) and 0 from (-infinity,-1.5811306) and (0.2736516,infinity)
+
+### 6.
+
+```{r}
+# (a)
+
+
+ library(MASS)
+
+ set.seed(2000)
+ green<-mvrnorm(100,c(2,1),diag(2))
+ green<-data.frame(green)
+ red<-mvrnorm(100,c(1,2),diag(2))
+ red<-data.frame(red)
+ 
+# (b) 
+ plot(green,col='green',xlab ='x1', ylab= 'x2',xlim = c(-2.5,4.5),ylim=c(-2,5))
+ points(red,col='red')
+
+#(c)
+ set.seed(2014)
+ green_test<-mvrnorm(500,c(2,1),diag(2))
+ green_test<-data.frame(green_test)
+ red_test<- mvrnorm(500,c(1,2),diag(2))
+ red_test<-data.frame(red_test)
+```
+
+### 7
+
+### (a)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q7-A.jpg)
+
+### (b)
+
+![](/Users/shreyarora/Documents/M574%20Statistical%20ML/HW/HW2/Q7-B.jpg)
+
+```{r echo = FALSE}
+
+## Previous Plot
+plot(green,col='green',xlab ='x1', ylab= 'x2',xlim = c(-2.5,4.5),ylim=c(-2,5))
+points(red,col='red')
+
+
+## Adding bayes boundary to the plot
+
+abline(coef = c(0,1))
+```
+
+### (c)
+
+```{r}
+# Loss = false +ve error (x is less than 3/2 and is labeled as green) + false negative (when x is greater than  or equal to 3/2 and is labeled as red)
+
+false_positive_train = length(green['X1'][green['X1']<green['X2']])
+false_negative_train = length(red['X1'][red['X1']>=red['X2']])
+
+total_train_error_rate = (false_positive_train+false_negative_train)/200
+
+false_positive_test = length(green_test['X1'][green_test['X1']<green_test['X2']])
+false_negative_test = length(red_test['X1'][red_test['X1']>=red_test['X2']])
+
+total_test_error_rate = (false_positive_test+false_negative_test)/1000
+
+print(c(total_train_error_rate,total_test_error_rate))
+
+
+```
+
+Training error = 21.5%
+
+Testing error = 23.9%
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

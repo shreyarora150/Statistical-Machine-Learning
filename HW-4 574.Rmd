@@ -1,0 +1,405 @@
+---
+title: "HW - 4 574"
+author: "Shrey"
+date: "2022-10-26"
+output:
+  pdf_document: default
+  html_document: default
+---
+### 1. 
+
+Paper talks about using nearest shrunken centroids tenchnique for classifying cancer types using micro-arrays. They compute T statistics for each class and use a regularization terms S0
+
+$$t_{kj} = \frac{\hat{\mu_{kj}}-\mu_{j}}{mk(sj+s0)} $$ 
+The tkj is reduced to |tkj|-delta, with a shareholding parameter delta and if the difference is less than zero then the class centroids are shrunken (soft thresholding) or tkj becomes tkjxI(|tkj|>delta) (hard threshold). K discriminanat functions are find the distance of the test point from the K shrunken centroids and priors, which are used to classify the test points. 
+The features are selected based on cross-validation log likelihoods. A controling parameter $\theta$ can be used to regularize the errors. 
+
+
+
+
+### 2.
+
+**Best Subset selection of size M**
+
+We want to select the subset of size M that will give the most significant coefficients. 
+
+Since the Xj's are oRthogonal then the coefficient $\beta_{j}$ for Xj will be independent of other X's and will be the same as obtained in univariate regression of Y on Xj. 
+
+Therefore we will select the feaures that are giving the largest M Betas. We will rank the coefficients and select the one's that are greater than the M'th coefficient 
+
+Therefore we can write 
+
+$\beta_{j}^{BestSubset} = \beta_{j}^{ols}I(|\beta_{j}^{ols}| > |\beta_{M}|)$
+
+**Ridge**
+
+We know that 
+
+$\beta^{OLS} = (X^{T}X)^{-1}X^{T}Y$
+
+When the Xj's are scaled and they are orthonormal then,
+
+$(X^{T}X) = I$ , 
+
+therefore $\beta^{OLS} = X^{T}Y$
+
+and we know in ridge regression $\beta^{ridge}= (X^{T}X+\lambda)^{-1}X^{T}Y$ 
+
+In orthonormal conditions the above equation can be written as-
+
+$\beta^{ridge}= (I+\lambda)^{-1}\beta^{OLS}$ 
+
+Which can be written as 
+$\beta_{j}^{ridge}= \frac{\beta_{j}^{OLS}}{1+\lambda}$
+
+
+### 3. 
+
+### (a)
+
+$RSS = (Y-X\beta{})^T(Y-X\beta{})$
+
+To minimize the RSS w.r.t $\beta{}$
+
+$\nabla_{\beta{}}{RSS} = 0 \\$
+$\nabla_{\beta{}}(Y-X\hat{\beta{}})^T(Y-X\hat{\beta{}}) = 0\\$
+$\nabla_{\beta{}}(Y^T-\hat{\beta{}}^TX^T)(Y-X\hat{\beta{}}) = 0\\$
+$\nabla_{\beta{}}(Y^TY-Y^TX\beta{}-\beta{}^TX^TY+\beta^TX^TX\beta{}) = 0\\$
+$0 - X^TY - X^TY + X^TX\beta{} + (\beta{}^TX^TX)^T = 0\\$
+$X^TX\beta{} = X^TY\\$
+$\hat{\beta{}} = (X^TX)^{-1}X^TY\\$
+
+### (b)
+
+In OLS regression $\hat{\beta{}} = (X^TX)^{-1}X^TY$
+
+Taking expectation operator both sides 
+
+$E[\hat{\beta{}}] = E[(X^TX)^{-1}X^TY]\\$
+$E[\hat{\beta{}}] = (X^TX)^{-1}X^T E[Y]$
+
+We know $Y = \beta{}X + \epsilon$, 
+where $\epsilon \sim N(0,\sigma^2)$
+
+$E[\hat{\beta{}}] = (X^TX)^{-1}X^T E[\beta{}X + \epsilon]$
+
+$E[\hat{\beta{}}]= (X^TX)^{-1}X^TXE[\beta{}] + (X^TX)^{-1}X^TE[\epsilon]$
+
+$E[\hat{\beta{}}] = \beta{}$
+
+Therefore we can say its an  unbiased estimator of $\beta$
+
+$Cov(\hat{\beta{}}) = \begin{bmatrix} \sigma^2(\beta_{0})&\sigma(\beta_{0},\beta_{1}) &- & - &- & \sigma(\beta_{0},\beta_{p})) \\ \sigma(\beta_{1},\beta_{0}) & \sigma^2(\beta_{1})&-&-&-&\sigma(\beta_{1},\beta_{p}) \\ | & | & |& |& |& |\\ | & | & |& |& |& | \\ \sigma(\beta_{p},\beta_{0})& \sigma(\beta_{p},\beta_{1})&-&-&-& \sigma^2(\beta_{p}) \end{bmatrix}$
+
+variance-covariance matrix of beta (p+1)x(p+1) matrix with diagonal elements being variance of $\beta_{j,j}$ and non diagonal elements being covariance between $\beta_{i}$ and $\beta_{j}$
+
+
+### (c)
+
+$\hat{\beta{}} = argmin RSS + \lambda\beta{}^T\beta{}\\$
+$\\RSS = (Y-X\beta{})^T(Y-X\beta{})\\$
+$\nabla_{\beta{}}[(Y-X\hat{\beta{}})^T(Y-X\hat{\beta{}})+\lambda\beta{}^T\beta{}]=0\\$ 
+$\nabla_{\beta{}}(Y^TY-Y^TX\beta{}-\beta{}^TX^TY+\beta^TX^TX\beta{}+\lambda\beta^T\beta) = 0\\$
+$0 - X^TY - X^TY + X^TX\beta{} + (\beta{}^TX^TX)^T +2\lambda\beta= 0\\$
+$(X^TX+\lambda I)\beta{} = X^TY\\$
+$\hat{\beta_{ridge}} = (X^TX+\lambda I)^{-1}X^TY\\$
+
+### (d)
+
+$\hat{\beta_{ridge}} = (X^TX+\lambda I)^{-1}X^TY$
+
+$\hat{\beta_{OLS}} = (X^TX)^{-1}X^TY$
+
+from above two equations we can write 
+
+$\hat{\beta_{ridge}} = (X^TX+\lambda I)(X^TX)\hat{\beta_{OLS}}$
+
+Therefore $\hat{\beta_{ridge}} = K_{\lambda} \hat{\beta_{OLS}}$
+where $K_{\lambda} =  (X^TX+\lambda I)(X^TX)$
+
+### (e)
+
+We know $E[\hat{\beta_{OLS}}] = \beta{}$
+
+and $\hat{\beta_{ridge}} =  \hat{\beta_{OLS}}$
+
+Thus we can say $E[\hat{\beta_{ridge}}] = K_{\lambda}\beta{}$
+Therefore $bias = \beta{}(1-k_{\lambda})$
+
+When lambda approaches to zero K becomes becomes 1 and bias becomes zero
+
+### (f)
+$\hat{\beta_{ridge}} = (X^TX+\lambda I)^{-1}X^TY$
+
+When lambda approaches to zero K becomes 1 and $\beta_{ridge}$ tends towards $\beta_{OLS}$
+
+When lambda approaches to infinity $(X^TX+\lambda I)^{-1}$ approaches to zero therefore $\beta_{ridge}$ tends towards zero.
+
+### (g)
+
+When p >> n X can have maximum rank of n and X transpose can also have maximum rank of n. Therefore max rank of $X^TX$ is n hence it is not full rank and it will be ininvertible.
+
+In other words in reduced form one or more columns of $X^TX$ will have no pivots. 
+
+When it becomes $(X^TX+\lambda I)$ a non zero term is added to the diagonal elements therfore making making all the columns have pivot element and making the matrix full rank and invertible.
+
+When ridge estimator is used we guaratntee that there will be one unique correct solution. If we use OLS and the matrix becomes non full rank then we may have infinite solutions, Therfore to avoid this it's better to use ridge instead of OLS
+
+### 4. 
+
+### (a)
+
+```{r}
+ library(MASS)
+
+ set.seed(2000)
+ green<-mvrnorm(100,c(2,1),diag(2))
+ red<-mvrnorm(100,c(1,2),diag(2))
+
+ 
+ set.seed(2014)
+ green_test<-mvrnorm(500,c(2,1),diag(2))
+ red_test<- mvrnorm(500,c(1,2),diag(2))
+ 
+ X_train = rbind(green,red)
+ y_train = factor(c(rep(1,100),rep(0,100)))
+
+ 
+ X_test = rbind(green_test,red_test)
+ y_test = factor(c(rep(1,500),rep(0,500)))
+
+ library(class)
+ num_neighbors = c(1, 4, 7, 10, 13, 16, 30, 45, 60, 80, 100, 150, 200)
+ train_errors = c()
+ test_errors = c()
+ for (x in num_neighbors)
+ {
+  m1 = knn(X_train,X_train,y_train,k=x)
+  m2 = knn(X_train,X_test,y_train,k=x)
+  train_errors = append(train_errors, mean(m1!=y_train))
+  test_errors = append(test_errors,mean(m2!=y_test))
+ }
+ 
+ print(train_errors)
+ print(test_errors)
+```
+
+```{r}
+ dof_train =  200/num_neighbors
+ dof_test = 1000/num_neighbors
+
+ plot(dof_train,train_errors,xlab = "n/k",ylab = "train/test error",type="l",col = "green",xlim= c(0,1000))
+ lines(dof_test,test_errors,xlab = "n/k",ylab = "test error",type="l",col="red")
+```
+ ### (b)
+ 
+```{r}
+library(MASS)
+#generate ten centers, which are treated as fixed parameters
+Sig <- matrix(c(1,0,0,1),nrow=2)
+seed_center <- 16
+set.seed(seed_center)
+center_green <- mvrnorm(n=10,c(1,0),Sig)
+center_red <- mvrnorm(n=10,c(0,1),Sig)
+##define a function "gendata2" first
+gendata2 <-function(n,mu1,mu2,Sig1,Sig2,myseed)
+{
+set.seed(myseed)
+mean1 <- mu1[sample(1:10,n,replace=T),]
+mean2 <- mu2[sample(1:10,n,replace=T),]
+green <- matrix(0,ncol=2,nrow=n)
+red <- matrix(0,ncol=2,nrow=n)
+for(i in 1:n){
+green[i,] <- mvrnorm(1,mean1[i,],Sig1)
+red[i,] <- mvrnorm(1,mean2[i,],Sig2)
+}
+x <- rbind(green,red)
+return(x)
+}
+#generate the training set
+seed_train <- 2000
+ntrain <- 100
+train2 <- gendata2(ntrain,center_green,center_red,Sig/5,Sig/5,seed_train)
+ytrain <- c(rep(1,ntrain),rep(0,ntrain))
+
+seed_test <- 2014
+ntest <- 500
+test2 <- gendata2(ntest,center_green,center_red,Sig/5,Sig/5,seed_test)
+ytest <- c(rep(1,ntest),rep(0,ntest))
+
+ library(class)
+ num_neighbors = c(1, 4, 7, 10, 13, 16, 30, 45, 60, 80, 100, 150, 200)
+ train_errors2 = c()
+ test_errors2 = c()
+ 
+ for (x in num_neighbors)
+ {
+  m1 = knn(train2,train2,ytrain,k=x)
+  m2 = knn(train2,test2,ytrain,k=x)
+  train_errors2 = append(train_errors2, mean(m1!=ytrain))
+  test_errors2 = append(test_errors2,mean(m2!=ytest))
+ }
+ 
+ print(train_errors2)
+ print(test_errors2)
+
+
+```
+```{r}
+ dof_train =  200/num_neighbors
+ dof_test = 1000/num_neighbors
+
+ plot(dof_train,train_errors2,xlab = "n/k",ylab = "train/test error",type="l",col = "green",xlim= c(0,1000))
+ lines(dof_test,test_errors2,xlab = "n/k",ylab = "test error",type="l",col="red")
+```
+ ### (c)
+ 
+ For each of the two plots we observe following things:- 
+ 1. Train and test errors are maximum when n/k is very small i.e K is very large
+ 2. The test errors decrease when n/k increases and reach a minimum and starts to increase again
+ 3. The train error keeps decreasing with increasing degree of freedom
+ 
+ We will select the value of k which is giving the minimum test errror 
+ 
+```{r}
+k_scenario_1 = num_neighbors[which.min(test_errors)]
+k_scenario_2 = num_neighbors[which.min(test_errors2)]
+
+print(k_scenario_1)
+print(k_scenario_2)
+```
+ 
+ 
+### 5. 
+
+### (a)
+```{r}
+train_data = read.table(gzfile("/Users/shreyarora/Downloads/zip.train"))   
+test_data = read.table(gzfile("/Users/shreyarora/Downloads/zip.test"))
+
+train_data = train_data[(train_data[,1] == 1 | train_data[,1] == 2 | train_data[,1] == 3),]
+test_data = test_data[(test_data[,1] == 1 | test_data[,1] == 2 | test_data[,1] == 3),]
+
+x_train = train_data[,2:257]
+y_train =factor(train_data[,1])
+
+x_test = test_data[,2:257]
+y_test = factor(test_data[,1])
+
+neighbors = c(1, 3, 5, 7, 15)
+library(class)
+train_errors = c()
+test_errors = c()
+
+for (x in neighbors)
+{
+ m1 = knn(x_train,x_train,y_train,k=x)
+ m2 = knn(x_train,x_test,y_train,k=x)
+ train_errors = append(train_errors, mean(m1!=y_train))
+ test_errors = append(test_errors,mean(m2!=y_test))
+}
+
+print(train_errors)
+print(test_errors)
+
+```
+
+### (b)
+
+```{r}
+xtrain2 = x_train[-16]
+xtest2 = x_test[-16]
+
+model = lda(xtrain2,y_train)
+train_errors_lda = mean(predict(model,xtrain2)$class != y_train)
+test_errors_lda = mean(predict(model,newdata = xtest2)$class != y_test)
+
+print(train_errors_lda)
+print(test_errors_lda)
+
+```
+
+### 6
+
+### (a)
+
+```{r}
+
+
+library(MASS)
+
+ set.seed(2000)
+ green<-mvrnorm(100,c(2,1),diag(2))
+ red<-mvrnorm(100,c(1,2),diag(2))
+
+ set.seed(2014)
+ green_test<-mvrnorm(500,c(2,1),diag(2))
+ red_test<- mvrnorm(500,c(1,2),diag(2))
+ 
+ X_train = rbind(green,red)
+ y_train = factor(c(rep(1,100),rep(0,100)))
+ train_data_cv = data.frame(X_train,y_train)
+
+makefolds<- function(df,s)
+  {
+  n = length(df)
+  class1_index = which(df['y_train']==1)
+  class0_index = which(df['y_train']==0)
+  set.seed(s)
+  class1_index_random = sample(class1_index)
+  class0_index_random = sample(class0_index)
+  return(cbind(class1_index_random,class0_index_random))
+  
+  }
+  
+  shuffled_indexes = makefolds(train_data_cv,10)
+  
+  ##cross validation
+  errors_lda = c()
+  for (k in seq(1,5))
+  {
+   
+    test_indexes = shuffled_indexes[(20*k-19):(20*k),]
+    test_indexes = append(test_indexes[,1],test_indexes[,2])
+    test_data = X_train[test_indexes,]
+    train_data = X_train[-test_indexes,]
+    ##lda
+    model1 = lda(train_data, y_train[-test_indexes])
+    error1 = mean(predict(model1,newdata = test_data)$class != y_train[test_indexes])
+    errors_lda = append(errors_lda,error1)
+    
+  }
+
+  print(mean(errors_lda))
+  print(errors_lda)
+  
+```
+```{r}
+shuffled_indexes = makefolds(train_data_cv,19)
+
+errors_logistic = c()
+for (k in seq(1,5))
+  {
+   
+    test_indexes = shuffled_indexes[(20*k-19):(20*k),]
+    test_indexes = append(test_indexes[,1],test_indexes[,2])
+    test_data = X_train[test_indexes,]
+    train_data = X_train[-test_indexes,]
+   
+    ##logitic regrression 
+    train_logistic = data.frame(train_data,y_train[-test_indexes])
+    colnames(train_logistic) = c("X1","X2","Y")
+    
+    test_logistic = data.frame(test_data,y_train[test_indexes])
+    colnames(test_logistic) = c("X1","X2","Y")
+    
+    model2 = glm(Y~.,family = binomial(link="logit"), data = train_logistic)
+    error2 = mean(as.numeric(predict(model2, newdata = test_logistic[,1:2])>0)!= y_train[test_indexes])
+    errors_logistic = append(errors_logistic,error2)
+    
+  }
+
+print(mean(errors_logistic))
+print(errors_logistic)
+```
+
